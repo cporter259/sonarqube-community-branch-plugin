@@ -103,6 +103,7 @@ public class BitbucketPullRequestDecorator implements PullRequestBuildStatusDeco
             updateAnnotations(client, analysisDetails, reportKey);
 
             if (reportGenerator.isPublishBuildStatus()) { 
+            	LOGGER.atInfo().setMessage("sending build report for commit {}").addArgument(analysisDetails.getCommitSha()).log();
 	            BuildStatus buildStatus = new BuildStatus(analysisDetails.getQualityGateStatus() == QualityGate.Status.OK ? BuildStatus.State.SUCCESSFUL : BuildStatus.State.FAILED, reportKey, "SonarQube", analysisSummary.getDashboardUrl());
 	            client.submitBuildStatus(analysisDetails.getCommitSha(),buildStatus);
             }
