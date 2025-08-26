@@ -18,16 +18,23 @@
  */
 package com.github.mc1arke.sonarqube.plugin.scanner;
 
-import com.github.mc1arke.sonarqube.plugin.ce.pullrequest.gitlab.GitlabMergeRequestDecorator;
+import static com.github.mc1arke.sonarqube.plugin.ce.pullrequest.bitbucket.BitbucketPullRequestDecorator.PUBLISH_BUILD_STATUS;
+
+import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sonar.api.batch.sensor.Sensor;
 import org.sonar.api.batch.sensor.SensorContext;
 import org.sonar.api.batch.sensor.SensorDescriptor;
 import org.sonar.api.utils.System2;
 
-import java.util.Optional;
+import com.github.mc1arke.sonarqube.plugin.ce.pullrequest.gitlab.GitlabMergeRequestDecorator;
 
 public class ScannerPullRequestPropertySensor implements Sensor {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(ScannerPullRequestPropertySensor.class);
+	
     private final System2 system2;
 
     public ScannerPullRequestPropertySensor(System2 system2) {
@@ -53,7 +60,9 @@ public class ScannerPullRequestPropertySensor implements Sensor {
                 v -> sensorContext.addContextProperty(GitlabMergeRequestDecorator.PULLREQUEST_GITLAB_PROJECT_URL, v));
         Optional.ofNullable(system2.property(GitlabMergeRequestDecorator.PULLREQUEST_GITLAB_PIPELINE_ID)).ifPresent(
                 v -> sensorContext.addContextProperty(GitlabMergeRequestDecorator.PULLREQUEST_GITLAB_PIPELINE_ID, v));
-
+		
+        Optional.ofNullable(system2.property(PUBLISH_BUILD_STATUS)).ifPresent(
+        		v -> sensorContext.addContextProperty(PUBLISH_BUILD_STATUS, v));
     }
 
 }

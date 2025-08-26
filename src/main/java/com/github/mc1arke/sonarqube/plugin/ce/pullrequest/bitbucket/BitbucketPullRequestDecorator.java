@@ -101,8 +101,8 @@ public class BitbucketPullRequestDecorator implements PullRequestBuildStatusDeco
             client.uploadReport(analysisDetails.getCommitSha(), codeInsightsReport, reportKey);
 
             updateAnnotations(client, analysisDetails, reportKey);
-
-            if (reportGenerator.isPublishBuildStatus()) { 
+            
+            if (publishBuildStatus(analysisDetails)) { 
             	LOGGER.atInfo().setMessage("sending build report for commit {}").addArgument(analysisDetails.getCommitSha()).log();
 	            BuildStatus buildStatus = new BuildStatus(analysisDetails.getQualityGateStatus() == QualityGate.Status.OK ? BuildStatus.State.SUCCESSFUL : BuildStatus.State.FAILED, reportKey, "SonarQube", analysisSummary.getDashboardUrl());
 	            client.submitBuildStatus(analysisDetails.getCommitSha(),buildStatus);
@@ -119,6 +119,11 @@ public class BitbucketPullRequestDecorator implements PullRequestBuildStatusDeco
         return Arrays.asList(ALM.BITBUCKET, ALM.BITBUCKET_CLOUD);
     }
 
+	protected boolean publishBuildStatus(AnalysisDetails analysisDetails) {
+		return Boolean.valueOf(analysisDetails.getScannerProperty(PUBLISH_BUILD_STATUS).orElse(
+				reportGenerator.getConfigurationProperty(PUBLISH_BUILD_STATUS).orElse(Boolean.TRUE.toString())));
+	}
+    
     private static List<ReportData> toReport(BitbucketClient client, AnalysisSummary analysisSummary) {
         List<ReportData> reportData = new ArrayList<>();
         reportData.add(new ReportData("New Issues", new DataValue.Text(issueLabel(analysisSummary.getNewIssues().getValue()))));

@@ -19,6 +19,7 @@
 package com.github.mc1arke.sonarqube.plugin.ce.pullrequest.bitbucket;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -108,7 +109,7 @@ class BitbucketPullRequestDecoratorTest {
         when(analysisSummary.getDashboardUrl()).thenReturn(DASHBOARD_URL);
         when(reportGenerator.createAnalysisSummary(any())).thenReturn(analysisSummary);
         when(client.normaliseReportKey(any())).thenReturn("reportKey");
-        when(reportGenerator.isPublishBuildStatus()).thenReturn(false);
+        when(reportGenerator.getConfigurationProperty(BitbucketPullRequestDecorator.PUBLISH_BUILD_STATUS)).thenReturn(Optional.of(Boolean.FALSE.toString()));
         underTest.decorateQualityGateStatus(analysisDetails, almSettingDto, projectAlmSettingDto);
 
         verify(client).normaliseReportKey(REPORT_KEY);
@@ -147,7 +148,6 @@ class BitbucketPullRequestDecoratorTest {
         when(analysisSummary.getNewIssues()).thenReturn(new AnalysisSummary.UrlIconMetric<>("newIssuesUrl", "newIssuesImageUrl", 666L));
         when(analysisSummary.getSecurityHotspots()).thenReturn(new AnalysisSummary.UrlIconMetric<>("securityHotspotsUrl", "securityHotspotsImageUrl", 69));
         when(client.normaliseReportKey(REPORT_KEY)).thenReturn("reportKey");
-        when(reportGenerator.isPublishBuildStatus()).thenReturn(true);
         underTest.decorateQualityGateStatus(analysisDetails, almSettingDto, projectAlmSettingDto);
 
         verify(client).normaliseReportKey(REPORT_KEY);
@@ -186,6 +186,25 @@ class BitbucketPullRequestDecoratorTest {
         assertFalse(result);
     }
 
+    @ParameterizedTest
+    @CsvSource({"true, true, true",
+        "false, true, false",
+        ", true, true",
+        ", false, false",
+        "true,, true",
+        "false,, false",
+        ",, true"})
+    void testPublishBuildStatus(String scanner, String project, String result) {
+    	
+    	AnalysisDetails analysisDetail = mock();
+    	
+    	when(analysisDetail.getScannerProperty(BitbucketPullRequestDecorator.PUBLISH_BUILD_STATUS)).thenReturn(Optional.ofNullable(scanner));
+    	
+    	when(reportGenerator.getConfigurationProperty(BitbucketPullRequestDecorator.PUBLISH_BUILD_STATUS)).thenReturn(Optional.ofNullable(project));
+    	
+    	assertEquals(Boolean.valueOf(result), underTest.publishBuildStatus(analysisDetail)); 	
+    }
+    
     private void mockValidAnalysis() {
         when(analysisDetails.getCommitSha()).thenReturn(COMMIT);
         when(analysisDetails.getQualityGateStatus()).thenReturn(QualityGate.Status.OK);

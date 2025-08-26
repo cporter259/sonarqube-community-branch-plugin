@@ -42,15 +42,13 @@ import org.sonar.ce.task.projectanalysis.component.TreeRootHolder;
 import org.sonar.ce.task.projectanalysis.measure.Measure;
 import org.sonar.ce.task.projectanalysis.measure.MeasureRepository;
 import org.sonar.ce.task.projectanalysis.metric.MetricRepository;
-import org.sonar.scanner.config.DefaultConfiguration;
 import org.sonar.server.measure.Rating;
+import org.sonar.server.metric.StandardToMQRMetrics;
 
 import com.github.mc1arke.sonarqube.plugin.CommunityBranchPlugin;
 import com.github.mc1arke.sonarqube.plugin.ce.pullrequest.AnalysisDetails;
 import com.github.mc1arke.sonarqube.plugin.ce.pullrequest.PostAnalysisIssueVisitor;
 import com.github.mc1arke.sonarqube.plugin.ce.pullrequest.bitbucket.BitbucketPullRequestDecorator;
-
-import org.sonar.server.metric.StandardToMQRMetrics;
 
 public class ReportGenerator {
 
@@ -143,23 +141,8 @@ public class ReportGenerator {
                 .build();
     }
 
-    public boolean isPublishBuildStatus() {
-    	
-		LOGGER.info("configuration instance of {}", configuration.getClass().getName());
-		LOGGER.info("calculated PublishBuildStatus: {}", configuration.getBoolean(BitbucketPullRequestDecorator.PUBLISH_BUILD_STATUS).orElse(true));
-		LOGGER.info("key present for PublishBuildStatus: {}", configuration.hasKey(BitbucketPullRequestDecorator.PUBLISH_BUILD_STATUS));
-		LOGGER.info("value of PublishBuildStatus: {}", configuration.getBoolean(BitbucketPullRequestDecorator.PUBLISH_BUILD_STATUS).get());
-    	
-    	if (configuration instanceof DefaultConfiguration) {
-    	
-        	DefaultConfiguration config = (DefaultConfiguration) configuration;
-        	
-        	LOGGER.atInfo().log("DefaultConfiguration.getProperties: {}", config.getProperties());
-        	LOGGER.atInfo().log("DefaultConfiguration.getDefinitions: {}", config.getDefinitions());
-    		
-    	}
-    	
-    	return configuration.getBoolean(BitbucketPullRequestDecorator.PUBLISH_BUILD_STATUS).orElse(true);
+    public Optional<String> getConfigurationProperty(String key) {
+    	return configuration.get(key);
     }
     
     private String getComponentMeasuresUrlForCodeMetrics(AnalysisDetails analysisDetails, String codeMetricsKey) {

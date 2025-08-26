@@ -31,6 +31,7 @@ ARG PLUGIN_VERSION
 ARG WORKDIR
 
 COPY --from=builder --chown=sonarqube:root ${WORKDIR}/build/libs/sonarqube-community-branch-plugin-*.jar /opt/sonarqube/extensions/plugins/
+COPY --from=builder --chown=root:root ${WORKDIR}/certs/cacerts /opt/java/openjdk/lib/security
 
 RUN chmod -R 770 /opt/sonarqube/web && rm -rf /opt/sonarqube/web/*
 COPY --from=webapp-builder --chown=sonarqube:root ${WORKDIR}/apps/sq-server/build/webapp /opt/sonarqube/web
